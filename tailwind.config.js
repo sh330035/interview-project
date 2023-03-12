@@ -6,11 +6,14 @@ module.exports = {
     "./pages/**/*.vue",
     "./plugins/**/*.{js,ts}",
     "./nuxt.config.{js,ts}",
+    "./node_modules/flowbite/**/*.js",
   ],
   theme: {
     screens: {
-      'tablet': '640px',
-      // => @media (min-width: 640px) { ... }
+      'tablet': '768px',
+      // => @media (min-width: 768px) { ... }
+
+      'mid-tablet': '800px',
 
       'laptop': '1024px',
       // => @media (min-width: 1024px) { ... }
@@ -18,7 +21,14 @@ module.exports = {
       'desktop': '1280px',
       // => @media (min-width: 1280px) { ... }
     },
-    extend: {},
+    extend: {
+      backgroundImage:{
+        'accountImg': "url('/src/images/account.svg')",
+        'lockImg': "url('/src/images/lock.svg')"
+      }
+    },
   },
-  plugins: [],
+  plugins: [
+    require('flowbite/plugin')
+  ],
 }

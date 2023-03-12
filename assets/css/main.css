@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components{
+    .text-blueGray-4 {
+        @apply text-gray-500
+    }
+    .text-Gray-title {
+        @apply text-gray-700 text-xl
+    }
+    .avatar-32 {
+        @apply h-[32px] w-[32px] rounded-full mx-3
+    }
+}
