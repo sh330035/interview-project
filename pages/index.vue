@@ -1,63 +1,7 @@
 <template>
   <div class="bg-white flex flex-col h-screen">
-    <div class="w-auto tablet:max-w-screen-xl min-h-[50px] shadow-md flex justify-center z-10">
-      <div class="container max-w-7xl flex justify-between">
-        <a href="/" class="h-full flex-shrink-0 min-md:mr-[10px] min-md:block min-xl:mr-6 nuxt-link-exact-active nuxt-link-active block">
-          <img src="../src/images/hiskio.svg" class="h-3 mt-[18px] tablet:h-4 tablet:mt-4 ml-3" alt="">
-        </a>
-        <a href="/" class="hidden laptop:block min-xl:mr-6 min-md:mr-[11px] mx-3 mt-1">
-          <img src="../src/images/徵才header-01 7.svg" width="80" height="40" class="h-10 w-[80px] object-contain" alt="">
-        </a>
-        <div class="hidden tablet:flex h-full  flex-col justify-center mx-3">
-          <div class="explore-box cursor-pointer min-md:relative min-md:flex min-md:h-full min-md:items-center min-md:text-gray-700 min-md:hover:text-green-1 min-md:min-w-[56px] min-xl:min-w-[58px] align-middle flex">
-            <img src="../src/images/grid.svg" class="mr-[6px] svg-inline--fa fa-th-large fa-w-16" width="20" height="20" alt="">
-            <p class="text-neutral-500">課程</p>
-          </div>
-        </div>
-        <div class="flex-grow flex justify-start rounded-[25px] py-[5px] px-3">
-          <img src="../src/images/search.svg" class="" width="20" height="20" alt="">
-          <input type="text" name="" id="" class="hidden border-hidden tablet:block mx-1 px-2 w-auto  min-w-0 flex-grow rounded-none bg-white text-hi-block min-md:text-sm outline-none" placeholder="搜尋">
-        </div>
-        <div class="flex">
-          <ul class="hidden tablet:flex items-center">
-            <li>
-              <a href="/" class="block py-[10px] mx-2 text-blueGray-4 hover:font-semibold">我想開課</a>
-            </li>
-            <li v-if="login">
-              <a href="/" class="block py-[10px] mx-2 text-blueGray-4 hover:font-semibold">我的學習</a>
-            </li>
-            <li>
-              <img src="../src/images/cart.svg" class="mx-2" width="20" height="20" alt="">
-            </li>
-            <li v-if="login">
-              <button class="block">
-                <img src="../src/images/david.png" class="avatar-32" alt="">
-              </button>
-            </li>
-            <li v-if="!login" class="flex-shrink-0 min-md:block min-xl:ml-[29px] min-md:ml-[25px]">
-              <button @click="openModal" class="ml-6 w-16 h-8 rounded border-default text-sm leading-8 border-[1px] border-cyan-600 text-cyan-600 bg-white">登入</button>
-            </li>
-            <li v-if="!login" class="flex-shrink-0 min-md:ml-[10px] min-md:block">
-              <button class="ml-3 w-16 h-8 rounded text-sm leading-8 text-white bg-cyan-600">註冊</button>
-            </li>
-          </ul>
-          <ul class="flex mt-[11px] tablet:hidden ">
-            <li>
-              <a href="/"><img src="../src/images/cart.svg" class="mx-2 mt-1" width="20" height="20" alt=""></a>
-            </li>
-            <li>
-              <div class="h-5 w-5 mx-[20px] mt-2 cursor-pointer" @click="openMenu">
-                <div class="w-4 h-0.5 bg-[#8C8C8C] transition-all duration-300 transform origin-top-left" :class="{ 'rotate-45 h-0.5 w-[18px] bg-[#595959]': isMenuOpen }"></div>
-                <div class="w-4 h-0.5 bg-[#8C8C8C] transition-all duration-300 transform mt-1" :class="{ 'opacity-0': isMenuOpen }"></div>
-                <div class="w-4 h-0.5 bg-[#8C8C8C] transition-all duration-300 transform origin-bottom-left mt-1" :class="{ '-rotate-45 h-0.5  w-[18px] bg-[#595959]': isMenuOpen }"></div>
-              </div>
-            </li>
-            <MeunComponent v-if="isMenuOpen" :show="isMenuOpen"></MeunComponent>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <LoginComponent v-if="showModal" :show="showModal" @close="closeModalPare"></LoginComponent>
+    <NavbarComponent :showModal="showModal" @open="openModalPare"></NavbarComponent>
+    <LoginComponent v-if="showModal" :show="showModal" :isProcessing="isProcessing" @close="closeModalPare" @after-form-submit="afterFormSubmit" ></LoginComponent>
     
     <div id="main" class="w-auto tablet:max-w-screen-xl flex justify-center bg-neutral-50">
       <div class="container max-w-7xl flex flex-col tablet:flex-row tablet:mt-[70px] justify-between z-0">
@@ -69,7 +13,7 @@
               <p class="text-base text-gray-500 flex-grow pr-[180px] text-right">售價</p>
               <p class="text-base text-gray-500 mr-[75px]">結帳金額</p>
             </div>
-            <div v-for="course in dummyData_courses" v-bind:key="course.id" class="flex flex-col tablet:flex-row justify-between px-[15px] py-2 border-b-[1px]">
+            <div v-for="course in dummyData_courses" :key="course.id" class="flex flex-col tablet:flex-row justify-between px-[15px] py-2 border-b-[1px]">
               <div class="flex tablet:my-[20px] tablet:w-1/2">
                 <img :src="course.image" width="62px" height="34px" class="tablet:hidden rounded" alt="">
                 <img :src="course.image" width="120px" height="68px" class="hidden tablet:block rounded-md" alt="">
@@ -118,7 +62,7 @@
       <div class="container max-w-7xl">
         <h1 class="my-[20px] mx-3 text-Gray-title tablet:text-2xl tablet:mt-[45px]">募資課程</h1>
         <div class="flex flex-col tablet:flex-row tablet:ml-3">
-          <div v-for="fund_course in dummyData_fundraising_courses" v-bind:key="fund_course.id" class="flex flex-col mx-3 tablet:mx-0 tablet:mr-[15px]">
+          <div v-for="fund_course in dummyData_fundraising_courses" :key="fund_course.id" class="flex flex-col mx-3 tablet:mx-0 tablet:mr-[15px]">
             <!-- mobile -->
             <div class="container flex flex-col mb-2 bg-white p-2 rounded-md shadow-md tablet:hidden">
               <div class="flex justify-between">
@@ -167,15 +111,18 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+import api from '../plugins/api'
+import NavbarComponent from '~/components/navbarComponent.vue'
 import LoginComponent from "~/components/loginComponent.vue";
-import MeunComponent from "~/components/menuComponent.vue"
 
 export default {
     name: "IndexPage",
-    components: { LoginComponent, MeunComponent },
+    components: { NavbarComponent ,LoginComponent},
     data() {
         return {
-            login: false,
+            // 防止使用者重複點擊
+            isProcessing: false,
             dummyData_courses: [
                 {
                     "id": 1,
@@ -270,21 +217,63 @@ export default {
             ],
             subtotle: 10000,
             showModal: false,
-            isMenuOpen: false,
-            email: '',
-            password: ''
         };
     },
     methods:{
-      openModal() {
-        this.showModal = true
-      },
-      openMenu(){
-        this.isMenuOpen = !this.isMenuOpen
+      openModalPare(val){
+        this.showModal = val
       },
       closeModalPare(val){
         this.showModal = val
+      },
+      async afterFormSubmit(accountDetail){
+        try{
+          this.isProcessing = true;
+          const res = await api.login({
+            account: accountDetail.account,
+            password: accountDetail.password,
+            confirm: accountDetail.confirm
+          })
+          const { data } = res;
+
+          localStorage.setItem("token", data.access_token);
+
+          this.getCurrentUser()
+          this.isProcessing = false;
+
+          this.$router.push('/');
+
+        } catch(e){
+          console.log(e);
+          this.isProcessing = false;
+        }
+      },
+      async getCurrentUser(){
+        try{
+          const {data} = await api.getCurrentUser()
+          const userData = {
+            username: data.username,
+            avatar: data.avatar
+          }
+          this.$store.commit("setCurrentUser", userData);
+          
+        } catch(e) {
+          console.error(e.message)
+        }
       }
     },
+    computed:{
+      ...mapState({
+        username: state => state.currentUser.username,
+        avatar: state=> state.currentUser.avatar
+      })
+    },
+    mounted(){
+      const checkLogin = localStorage.getItem("token")
+      if(checkLogin){
+        this.$store.commit("setAuth", true);
+        this.getCurrentUser();
+      }
+    }
 }
 </script>
