@@ -55,9 +55,6 @@ export default{
             default: ""
         }
     },
-    data(){
-
-    },
     methods:{
         logout() {
             this.$store.commit("revokeAuthentication");
