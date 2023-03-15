@@ -4,7 +4,7 @@ import api from "~/plugins/api";
 const createStore =() =>{
     return new Vuex.Store({
         state: {
-            isAuthenticated: Boolean,
+            isAuthenticated: false,
             currentUser:{
                 username:'',
                 avatar:''
@@ -22,6 +22,7 @@ const createStore =() =>{
               ...state.currentUser,
               ...currentUser
             }
+            state.token = localStorage.getItem('token')
             state.isAuthenticated= true
           },
           setAuth(state, Auth){
@@ -38,12 +39,33 @@ const createStore =() =>{
             for(let i=0; i<courseData.length; i++){
               state.cartCourses.push(courseData[i].courses[0])
             }
+          },
+          // guest state fetch Carts data
+          fetchCartCoursesFromLocal(state){
+            const localCart = localStorage.getItem("hisko-carts")
+            if(localCart){
+              const courseData = JSON.parse(localCart)
+              state.cartCourses = courseData
+            }
+          },
+          addCourseFromLocal(state, courseData){
+            state.cartCourses.push(courseData)
+            localStorage.removeItem('hisko-carts')
+            const courseDatasJString = JSON.stringify(state.cartCourses)
+            localStorage.setItem('hisko-carts', courseDatasJString)
+          },
+          removeCourseFromLocal(state, courseData){
+            state.cartCourses = state.cartCourses.filter(course => course.id !== courseData.id)
+            localStorage.removeItem('hisko-carts')
+            const courseDatasJString = JSON.stringify(state.cartCourses)
+            localStorage.setItem('hisko-carts', courseDatasJString)
           }
         },
         actions: {
           setCurrentUser(context, currentUser) {
             context.commit('setCurrentUser', currentUser);
           },
+          // Auth state fetch Carts data
           async fetchCartCoursesFromApi({commit}) {
             try{
               const {data} = await api.addToCart()

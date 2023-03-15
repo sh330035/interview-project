@@ -58,7 +58,7 @@ export default{
     methods:{
         logout() {
             this.$store.commit("revokeAuthentication");
-            this.$router.push("/");
+            this.$router.go(0);
         },
         openLoginModal(){
             this.$emit('open')

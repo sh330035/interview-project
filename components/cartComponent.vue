@@ -1,5 +1,5 @@
 <template>
-        <div id="main" class="w-auto tablet:max-w-screen-xl flex justify-center bg-neutral-50">
+    <div id="main" class="w-auto tablet:max-w-screen-xl flex justify-center bg-neutral-50">
       <div class="container max-w-7xl flex flex-col tablet:flex-row tablet:mt-[70px] justify-between z-0">
         <div id="cart" class="container flex flex-col tablet:w-2/3">
           <h1 class="my-[20px] mx-3 text-Gray-title tablet:text-2xl">購物車</h1>
@@ -9,19 +9,22 @@
               <p class="text-base text-gray-500 flex-grow pr-[180px] text-right">售價</p>
               <p class="text-base text-gray-500 mr-[75px]">結帳金額</p>
             </div>
-            <div v-for="course in cartCourses" :key="course.id" class="flex flex-col tablet:flex-row justify-between px-[15px] py-2 border-b-[1px]">
-              <div class="flex tablet:my-[20px] tablet:w-1/2">
-                <img :src="course.image" width="62px" height="34px" class="tablet:hidden rounded" alt="">
-                <img :src="course.image" width="120px" height="68px" class="hidden tablet:block rounded-md" alt="">
-                <p class="mx-3 text-sm flex-grow tablet:text-base tablet:ml-3 tablet:mr-1">{{ course.title }}</p>
-                <img src="../src/images/delete.svg" width="24px" height="24px" class="tablet:hidden cursor-pointer" alt="" @click="removeCourse(course.id)">
-              </div>
-              <div class="flex justify-between mt-2 mb-1 tablet:flex-grow ">
-                <p class="text-xs tablet:text-lg tablet:py-[30px] tablet:ml-[55px] text-neutral-500">{{ course.price }}</p>
-                <p class="text-sm tablet:text-xl tablet:py-[30px] tablet:flex-grow tablet:text-right tablet:mr-[40px] text-neutral-600">{{ course.prices[course.prices.length-1].price }}</p>
-                <img src="../src/images/delete.svg" width="24px" height="24px" class="hidden tablet:block mr-[8px] cursor-pointer" alt="" @click="removeCourse(course.id)">
-              </div>
+            <div class="overflow-scroll max-h-[400px]">
+                <div v-for="course in cartCourses" :key="course.id" class="flex flex-col tablet:flex-row justify-between px-[15px] py-2 border-b-[1px]">
+                    <div class="flex tablet:my-[20px] tablet:w-1/2">
+                        <img :src="course.image" width="62px" height="34px" class="tablet:hidden rounded" alt="">
+                        <img :src="course.image" width="120px" height="68px" class="hidden tablet:block rounded-md" alt="">
+                        <p class="mx-3 text-sm flex-grow tablet:text-base tablet:ml-3 tablet:mr-1">{{ course.title }}</p>
+                        <img src="../src/images/delete.svg" width="24px" height="24px" class="tablet:hidden cursor-pointer" alt="" @click="removeCourse(course.id)">
+                    </div>
+                    <div class="flex justify-between mt-2 mb-1 tablet:flex-grow ">
+                        <p class="text-xs tablet:text-lg tablet:py-[30px] tablet:ml-[55px] text-neutral-500">{{ formatNumber(course.price) }}</p>
+                        <p class="text-sm tablet:text-xl tablet:py-[30px] tablet:flex-grow tablet:text-right tablet:mr-[40px] text-neutral-600">{{ formatNumber(course.prices[course.prices.length-1].price) }}</p>
+                        <img src="../src/images/delete.svg" width="24px" height="24px" class="hidden tablet:block mr-[8px] cursor-pointer" alt="" @click="removeCourse(course.id)">
+                    </div>
+                </div>
             </div>
+            
           </div>
         </div>
         <div id="subtotal" class="container flex flex-col tablet:w-1/3 tablet:mb-[235px]">
@@ -41,9 +44,9 @@
             <div class="flex flex-col py-4">
               <div class="flex justify-between">
                 <p class="text-base text-neutral-500">金額</p>
-                <p class="text-base text-neutral-500 before:content-['$']">{{ saleTotal }}</p>
+                <p class="text-base text-neutral-500 before:content-['$']">{{ formatNumber(saleTotal) }}</p>
               </div>
-              <p class="mt-[50px] text-[28px] tablet:mt-[10px] text-right text-neutral-700 before:content-['$']">{{ cartTotal }}</p>
+              <p class="mt-[50px] text-[28px] tablet:mt-[10px] text-right text-neutral-700 before:content-['$']">{{ formatNumber(cartTotal) }}</p>
               <button class="bg-red-500 text-white text-base py-2 px-10 my-2 rounded-md">前往結帳</button>
               <p class="text-xs text-gray-500">
                 點擊上方按鈕即表示您已閱讀並同意
@@ -58,10 +61,11 @@
 
 <script>
 import { mapState } from 'vuex';
+import NumberMixin from '~/mixins/global'
 
 export default {
     name:'CartComponent',
-    inject:['reload'],
+    mixins:[NumberMixin],
     props:{
         isAuthenticated: Boolean,
     },
@@ -75,29 +79,6 @@ export default {
                     }
                 ],
             },
-        }
-    },
-    methods: {
-        fetchCartCoursesFromLocal(){
-
-        },
-
-        removeCourse(id){
-            if(this.isAuthenticated){
-                const courseData = this.emptyCourses
-                courseData.items[0].id = id
-                this.$store.dispatch('removeCourseFromApi', courseData)
-                this.reload()
-            } else {
-                console.log('111')
-            }
-        },
-    },
-    mounted(){
-        if(!this.isAuthenticated){
-            this.fetchCartCoursesFromLocal()
-        } else {
-            this.$store.dispatch('fetchCartCoursesFromApi')
         }
     },
     computed:{
@@ -119,6 +100,26 @@ export default {
         }
             return total
         }
+    },
+    mounted(){
+        const Auth = this.$store.state.isAuthenticated
+        if(!Auth){
+            this.$store.commit('fetchCartCoursesFromLocal')
+        } else {
+            this.$store.dispatch('fetchCartCoursesFromApi')
+        }
+    },
+    methods: {
+        removeCourse(id){
+            const onClickCourseData = this.cartCourses.find(course => course.id === id)
+            if(this.isAuthenticated){
+                const courseData = this.emptyCourses
+                courseData.items[0].id = id
+                this.$store.dispatch('removeCourseFromApi', courseData)
+            } else {
+                this.$store.commit('removeCourseFromLocal', onClickCourseData)
+            }
+        },
     },
 }
 </script>

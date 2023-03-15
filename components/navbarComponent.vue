@@ -52,11 +52,9 @@
               </div>
             </li>
           </ul>
-
         </div>
-        
       </div>
-      <MenuComponent v-show="isMenuOpen"  :isAuthenticated="isAuthenticated" :username="username" :avatar="avatar" @open="openModal"></MenuComponent>
+      <MenuComponent v-show="isMenuOpen"  :is-authenticated="isAuthenticated" :username="username" :avatar="avatar" @open="openModal"></MenuComponent>
     </div>
 </template>
 
@@ -75,6 +73,13 @@ export default {
             isMenuOpen:false
         }
     },
+    computed:{
+      ...mapState({
+        username: state => state.currentUser.username,
+        isAuthenticated: state => state.isAuthenticated,
+        avatar: state => state.currentUser.avatar
+      })
+    },
     methods:{
         openModal() {
             this.$emit('open', true)
@@ -83,13 +88,5 @@ export default {
             this.isMenuOpen = !this.isMenuOpen
         },
     },
-    computed:{
-      ...mapState({
-        username: state => state.currentUser.username,
-        isAuthenticated: state => state.isAuthenticated,
-        avatar: state => state.currentUser.avatar
-      })
-    },
-
 }
 </script>

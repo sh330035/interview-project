@@ -2,8 +2,8 @@
     <div id="fundraisingCourse" class="bg-neutral-100 w-auto tablet:max-w-screen-xl flex justify-center">
       <div class="container max-w-7xl">
         <h1 class="my-[20px] mx-3 text-Gray-title tablet:text-2xl tablet:mt-[45px]">募資課程</h1>
-        <div class="flex flex-col tablet:flex-row tablet:ml-3">
-          <div v-for="fund_course in chectFundraisingTicket" :key="fund_course.id" class="flex flex-col mx-3 tablet:mx-0 tablet:mr-[15px]">
+        <div class="flex flex-col tablet:flex-row tablet:ml-3 overflow-scroll">
+          <div v-for="fund_course in fundraisingCourses" :key="fund_course.id" class="flex flex-col mx-3 tablet:mx-0 tablet:mr-[15px]">
             <!-- mobile -->
             <div class="container flex flex-col mb-2 bg-white p-2 rounded-md shadow-md tablet:hidden">
               <div class="flex justify-between">
@@ -13,7 +13,7 @@
                   <div id="bar" class="h-[6px] w-1/3 rounded-full bg-[#F0F0F0]">
                     <div class="h-[6px] rounded-full bg-red-500" :style="calWidth(fund_course.fundraising_tickets,fund_course.consumers)"></div>
                   </div>
-                  <p class="inline-block before:content-['$']">{{ fund_course.prices[fund_course.prices.length-1].price }} <span class="before:content-['$'] text-[#BFBFBF] line-through">{{ fund_course.fixed_price }}</span></p>
+                  <p class="inline-block before:content-['$']">{{ formatNumber(fund_course.prices[fund_course.prices.length-1].price) }} <span class="before:content-['$'] text-[#BFBFBF] line-through">{{ formatNumber(fund_course.fixed_price) }}</span></p>
                 </div>
                 <div>
                   <img :src="fund_course.lecturers[0].avatar" class="mt-1 mr-1 object-cover w-[23px] h-[23px] rounded-full" alt="">
@@ -26,10 +26,10 @@
               <div class="relative h-[153px]">
                 <img :src="fund_course.image"  class="w-full rounded-t-md h-[153px] object-fill" alt="">
                 <img src="../src/images/bookmark-border.svg" alt="" class="z-10 cursor-pointer absolute bottom-2 right-12">
-                <img src="../src/images/shopping-cart.svg" class="z-10 cursor-pointer absolute bottom-2 right-2" @click="cartToggler(fund_course.id)" alt="">
+                <img src="../src/images/shopping-cart.svg" class="z-10 cursor-pointer absolute bottom-2 right-2" alt="" @click="cartToggler(fund_course.id)" >
               </div>
               <div>
-                <p  class="text-xl text-[#454545] mx-[15px] mt-[15px] mb-[5px]">{{ fund_course.title }}</p>
+                <p  class="text-xl text-[#454545] mx-[15px] mt-[15px] mb-[5px] h-20">{{ fund_course.title }}</p>
                 <div class="flex">
                   <img :src="fund_course.lecturers[0].avatar" class="object-cover w-[37px] h-[37px] rounded-full mx-[15px]" alt="">
                   <p class="text-[#8C8C8C] text-base pt-1.5">{{ fund_course.lecturers[0].username }}</p>
@@ -42,7 +42,7 @@
                   <div id="bar" class="h-[10px] w-full rounded-full bg-[#F0F0F0]">
                     <div class="h-[10px] rounded-full bg-red-500" :style="calWidth(fund_course.fundraising_tickets,fund_course.consumers)"></div>
                   </div>
-                  <p class="text-xl text-gray-700 inline-block before:content-['$'] mt-[10px]">{{ fund_course.prices[fund_course.prices.length-1].price }} <span class="text-sm before:content-['$'] text-[#BFBFBF] line-through">{{ fund_course.fixed_price }}</span></p>
+                  <p class="text-xl text-gray-700 inline-block before:content-['$'] mt-[10px]">{{ formatNumber(fund_course.prices[fund_course.prices.length-1].price) }} <span class="text-sm before:content-['$'] text-[#BFBFBF] line-through">{{ formatNumber(fund_course.fixed_price) }}</span></p>
                 </div>
               </div>
             </div>
@@ -54,9 +54,11 @@
 <script>
 import { mapState } from "vuex"
 import api from '../plugins/api'
+import NumberMixin from '~/mixins/global'
 
 export default{
     name:'FundraisingCourse',
+    mixins:[NumberMixin],
     data(){
         return{
             fundraisingCourses: [],
@@ -71,6 +73,19 @@ export default{
             isLoading: true,
         }
     },
+    computed:{
+        ...mapState({
+            cartCourses: state => state.cartCourses,
+            isAuthenticated: state => state.isAuthenticated
+        }),
+        chectFundraisingTicket(){
+            return this.fundraisingCourses.filter(course => course.fundraising_tickets!==0)
+        },
+    },
+    created(){
+        this.isLoading = true
+        this.fetchFundraisingCourseData();
+    },
     methods: {
         async fetchFundraisingCourseData(){
             try {
@@ -78,7 +93,6 @@ export default{
                 this.fundraisingCourses = data
                 this.isLoading = false
 
-                console.log(this.fundraisingCourses)
             } catch(e) {
                 console.error(e)
                 this.isLoading = false
@@ -93,42 +107,23 @@ export default{
             return {width: w}
         },
         cartToggler(id){
-            if(this.cartCourses.find(course => course.id === id)){
-                // remove
-                console.log("remove")
-                if(this.isAuthenticated){
-                    const courseData = this.emptyCourses
-                    courseData.items[0].id = id
-                    this.$store.dispatch('removeCourseFromApi', courseData)
-                } else {
-                    console.log('111')
-                }
+            const onClickCourseData = this.fundraisingCourses.find(course => course.id === id)
+            const isExistInCarts = this.cartCourses.find(course => course.id === id)
+            const isLogin = this.isAuthenticated
+            if(isExistInCarts && isLogin){
+                const courseData = this.emptyCourses
+                courseData.items[0].id = id
+                this.$store.dispatch('removeCourseFromApi', courseData)
+            } else if (isExistInCarts && !isLogin) {
+                this.$store.commit('removeCourseFromLocal', onClickCourseData)
+            } else if (!isExistInCarts && isLogin) {
+                const courseData = this.emptyCourses
+                courseData.items[0].id = id
+                this.$store.dispatch('addCourseFromApi', courseData)
             } else {
-                // add
-                console.log("add")
-                if(this.isAuthenticated){
-                    const courseData = this.emptyCourses
-                    courseData.items[0].id = id
-                    this.$store.dispatch('addCourseFromApi', courseData)
-                } else {
-                    console.log('111')
-                }
+                this.$store.commit('addCourseFromLocal', onClickCourseData)
             }
-            
         }
     },
-    created(){
-        this.isLoading = true
-        this.fetchFundraisingCourseData();
-    },
-    computed:{
-        ...mapState({
-            cartCourses: state => state.cartCourses,
-            isAuthenticated: state => state.isAuthenticated
-        }),
-        chectFundraisingTicket(){
-            return this.fundraisingCourses.filter(course => course.fundraising_tickets!==0)
-        },
-    }
 }
 </script>
