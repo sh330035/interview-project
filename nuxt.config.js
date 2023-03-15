@@ -72,4 +72,7 @@ export default {
       },
     },
   },
+  router: {
+    base: '/interview-project/'
+  },
 }
